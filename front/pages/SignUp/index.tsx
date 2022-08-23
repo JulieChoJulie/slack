@@ -10,6 +10,7 @@ import {
   Success,
   Error,
 } from './styles';
+import { Link } from 'react-router-dom';
 import useInput from '@hooks/useInput';
 
 const SignUp = () => {
@@ -26,9 +27,11 @@ const SignUp = () => {
       e.preventDefault();
       if (!missmatchError && nickname && email && password && passwordCheck) {
         console.log('Sign up through server.');
+
         // initializing status
         setSignUpError('');
         setSignUpSuccess(false);
+
         axios
           .post('/api/users', {
             email,
@@ -129,7 +132,7 @@ const SignUp = () => {
         </Form>
         <LinkContainer>
           Do you already have an account?
-          <a href="/login">Click here to log in.</a>
+          <Link to="/login">Click here to log in.</Link>
         </LinkContainer>
       </div>
     </div>
