@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import axios from 'axios';
 import {
   Header,
   Form,
@@ -9,27 +10,41 @@ import {
   Success,
   Error,
 } from './styles';
+import useInput from '@hooks/useInput';
 
 const SignUp = () => {
-  const [email, setEmail] = useState('');
-  const [nickname, setNickname] = useState('');
+  const [email, onChangeEmail] = useInput('');
+  const [nickname, onChangeNickname] = useInput('');
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
   const [missmatchError, setMissmatchError] = useState(false);
   const [signUpSuccess, setSignUpSuccess] = useState(false);
-  const [signUpError, setSignUpError] = useState(false);
+  const [signUpError, setSignUpError] = useState('');
 
   const onSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      console.log(email, nickname, password, passwordCheck);
       if (!missmatchError && nickname && email && password && passwordCheck) {
         console.log('Sign up through server.');
-        setSignUpSuccess(true);
-        setSignUpError(false);
-      } else {
-        console.log('Error');
+        // initializing status
+        setSignUpError('');
         setSignUpSuccess(false);
+        axios
+          .post('/api/users', {
+            email,
+            nickname,
+            password,
+          })
+          .then((response) => {
+            console.log(response);
+            setSignUpSuccess(true);
+            setSignUpError('');
+          })
+          .catch((err) => {
+            console.log(err.response);
+            setSignUpSuccess(false);
+            setSignUpError(err.response.data);
+          });
       }
       if (missmatchError) {
         console.log(`passwords don't match`);
@@ -37,12 +52,6 @@ const SignUp = () => {
     },
     [email, nickname, password, passwordCheck, missmatchError],
   );
-  const onChangeEmail = useCallback((e) => {
-    setEmail(e.target.value);
-  }, []);
-  const onChangeNickname = useCallback((e) => {
-    setNickname(e.target.value);
-  }, []);
   const onChangePassword = useCallback(
     (e) => {
       setPassword(e.target.value);
@@ -111,9 +120,7 @@ const SignUp = () => {
             </div>
             {missmatchError && <Error>Password don't match.</Error>}
             {!nickname && <Error>Please fill out nickname.</Error>}
-            {signUpError && (
-              <Error>Oops, something went wrong. Please try again.</Error>
-            )}
+            {signUpError && <Error>{signUpError}</Error>}
             {signUpSuccess && (
               <Success>You have successfully signed up.</Success>
             )}

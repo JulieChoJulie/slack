@@ -84,15 +84,16 @@ const config: Configuration = {
   devServer: {
     historyApiFallback: true,
     port: 3090,
-    devMiddleware: { publicPath: '/dist/' },
+    devMiddleware: { publicPath: '/dist' },
     static: { directory: path.resolve(__dirname) },
-    // proxy: {
-    //   '/api/': {
-    //     target: 'http://localhost:3095',
-    //     changeOrigin: true,
-    //     ws: true,
-    //   },
-    // },
+    hot: true,
+    proxy: {
+      '/api/': {
+        target: 'http://localhost:3095',
+        changeOrigin: true,
+        // ws: true,
+      },
+    },
   },
 };
 
