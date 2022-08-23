@@ -11,7 +11,7 @@ interface Configuration extends WebpackConfiguration {
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const config: Configuration = {
-  name: 'sleact',
+  name: 'slact-front',
   mode: isDevelopment ? 'development' : 'production',
   devtool: !isDevelopment ? 'hidden-source-map' : 'inline-source-map',
   resolve: {
@@ -48,7 +48,10 @@ const config: Configuration = {
           ],
           env: {
             development: {
-              plugins: [['@emotion/babel-plugin', { sourceMap: true }], require.resolve('react-refresh/babel')],
+              plugins: [
+                ['@emotion/babel-plugin', { sourceMap: true }],
+                require.resolve('react-refresh/babel'),
+              ],
             },
             production: {
               plugins: ['@emotion/babel-plugin'],
@@ -69,7 +72,9 @@ const config: Configuration = {
       //   files: "./src/**/*",
       // },
     }),
-    new webpack.EnvironmentPlugin({ NODE_ENV: isDevelopment ? 'development' : 'production' }),
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: isDevelopment ? 'development' : 'production',
+    }),
   ],
   output: {
     path: path.join(__dirname, 'dist'),
@@ -100,7 +105,9 @@ if (isDevelopment && config.plugins) {
       },
     }),
   );
-  config.plugins.push(new BundleAnalyzerPlugin({ analyzerMode: 'server', openAnalyzer: false }));
+  config.plugins.push(
+    new BundleAnalyzerPlugin({ analyzerMode: 'server', openAnalyzer: false }),
+  );
 }
 if (!isDevelopment && config.plugins) {
   config.plugins.push(new webpack.LoaderOptionsPlugin({ minimize: true }));
