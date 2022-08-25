@@ -20,12 +20,14 @@ import React, { FC, useCallback, useState } from 'react';
 import useSWR from 'swr';
 import { Route, Routes, Navigate, Outlet, Link } from 'react-router-dom';
 import DirectMessage from '@pages/DirectMessage';
+import Menu from '@components/Menu';
 
 const Workspace = () => {
   const { data, error, mutate } = useSWR('/api/users', fetcher, {
     dedupingInterval: 100000,
   });
   const [logOutError, setLogOutError] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const onLogout = useCallback(() => {
     setLogOutError(false);
     axios
@@ -39,6 +41,10 @@ const Workspace = () => {
       });
   }, [mutate]);
 
+  const onClickUserProfile = useCallback(() => {
+    setShowUserProfile((prev) => !prev);
+  }, []);
+
   if (!data) {
     return <Navigate to="/login" />;
   }
@@ -47,11 +53,30 @@ const Workspace = () => {
     <div>
       <Header>
         <RightMenu>
-          <span>
+          <span onClick={onClickUserProfile}>
             <ProfileImg
               src={gravatar.url(data.email, { s: '28px', d: 'retro' })}
               alt={data.email}
             />
+            {showUserProfile && (
+              <Menu
+                style={{ right: 0, top: 38 }}
+                show={showUserProfile}
+                onCloseModal={onClickUserProfile}
+              >
+                <ProfileModal>
+                  <img
+                    src={gravatar.url(data.email, { s: '28px', d: 'retro' })}
+                    alt={data.email}
+                  />
+                  <div>
+                    <span id="profile-name">{data.nickname}</span>
+                    <span id="profile-active">Active</span>
+                  </div>
+                </ProfileModal>
+                <LogOutButton onClick={onLogout}>Log out</LogOutButton>
+              </Menu>
+            )}
           </span>
         </RightMenu>
       </Header>
