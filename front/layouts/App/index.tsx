@@ -5,6 +5,8 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 // code split
 const LogIn = loadable(() => import('@pages/LogIn'));
 const SignUp = loadable(() => import('@pages/SignUp'));
+const Workspace = loadable(() => import('@layouts/Workspace'));
+const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 const Channel = loadable(() => import('@pages/Channel'));
 
 const App = () => {
@@ -13,7 +15,11 @@ const App = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LogIn />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/workspace" element={<Channel />} />
+      <Route path="/channel" element={<Channel />} />
+      <Route path="/workspace" element={<Workspace />}>
+        <Route path="dm" element={<DirectMessage />} />
+        <Route path="channel" element={<Channel />} />
+      </Route>
     </Routes>
   );
 };
