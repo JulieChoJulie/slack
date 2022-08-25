@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import useInput from '@hooks/useInput';
+import fetcher from '@utils/fetcher';
 import {
   Button,
   Error,
@@ -10,28 +11,45 @@ import {
   LinkContainer,
 } from '@pages/SignUp/styles';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import useSWR from 'swr';
 
 const LogIn = () => {
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
 
+  const { data, error, mutate } = useSWR('/api/users', fetcher, {
+    dedupingInterval: 100000,
+  });
+
   const onSubmit = useCallback(
     (e) => {
       e.preventDefault();
       axios
-        .post('/api/users/login', { email, password })
+        .post(
+          '/api/users/login',
+          { email, password },
+          { withCredentials: true },
+        )
         .then(() => {
-          // revalidate();
+          mutate();
         })
         .catch((err) => {
           console.log(err);
           setLogInError(err.response?.data?.statusCode === 401);
         });
     },
-    [email, password],
+    [email, password, mutate],
   );
+
+  if (data === undefined) {
+    return <div>Loading</div>;
+  }
+
+  if (data) {
+    return <Navigate to="/workspace" replace />;
+  }
 
   return (
     <div id="container">

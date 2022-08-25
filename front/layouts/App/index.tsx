@@ -1,9 +1,11 @@
 import React from 'react';
 import loadable from '@loadable/component';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
+// code split
 const LogIn = loadable(() => import('@pages/LogIn'));
 const SignUp = loadable(() => import('@pages/SignUp'));
+const Channel = loadable(() => import('@pages/Channel'));
 
 const App = () => {
   return (
@@ -11,6 +13,7 @@ const App = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LogIn />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/workspace" element={<Channel />} />
     </Routes>
   );
 };
