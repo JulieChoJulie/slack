@@ -15,7 +15,7 @@ const Workspace: FC = ({ children }) => {
     axios
       .post('/api/users/logout', null, { withCredentials: true })
       .then(() => {
-        mutate();
+        mutate(false, { revalidate: false });
       })
       .catch((err) => {
         console.log(err);

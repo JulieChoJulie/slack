@@ -32,8 +32,8 @@ const LogIn = () => {
           { email, password },
           { withCredentials: true },
         )
-        .then(() => {
-          mutate();
+        .then((data) => {
+          mutate(data, { revalidate: false });
         })
         .catch((err) => {
           console.log(err);
