@@ -1,0 +1,5 @@
+front/node_modules
+.DS_Store
+.git
+front/dist
+

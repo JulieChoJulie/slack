@@ -10,10 +10,15 @@ import {
   Success,
   Error,
 } from './styles';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import useInput from '@hooks/useInput';
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
 
 const SignUp = () => {
+  const { data, error, mutate } = useSWR('/api/users', fetcher, {
+    dedupingInterval: 100000,
+  });
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, setPassword] = useState('');
@@ -69,6 +74,15 @@ const SignUp = () => {
     },
     [password],
   );
+
+  if (data === undefined) {
+    return <div>Loading</div>;
+  }
+
+  if (data) {
+    return <Navigate to="/workspace" replace />;
+  }
+
   return (
     <div>
       <div id="container">
