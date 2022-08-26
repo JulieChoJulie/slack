@@ -25,21 +25,19 @@ import { IUser } from '@typings/db';
 import useInput from '@hooks/useInput';
 import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Workspace = () => {
   const { mutate } = useSWRConfig();
-  const { data: userData, error } = useSWR<IUser | false>(
-    '/api/users',
-    fetcher,
-    {
-      dedupingInterval: 100000,
-    },
-  );
+  const { data: userData, error } = useSWR<IUser | false>('/api/users', fetcher);
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [newWorkspace, onChangeNewWorkpace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
   const [showCreateWorkspaceModal, setCreateWorkspaceModal] = useState(false);
+
+  toast.configure();
+
   const onLogout = useCallback(() => {
     setLogOutError(false);
     axios
@@ -87,6 +85,8 @@ const Workspace = () => {
         })
         .catch((err) => {
           console.dir(err);
+          console.log(err.response.data);
+
           toast.error(err.response?.data, { position: 'bottom-center' });
         });
     },
@@ -107,16 +107,9 @@ const Workspace = () => {
       <Header>
         <RightMenu>
           <span onClick={onClickUserProfile}>
-            <ProfileImg
-              src={gravatar.url(userData.email, { s: '28px', d: 'retro' })}
-              alt={userData.email}
-            />
+            <ProfileImg src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.email} />
             {showUserProfile && (
-              <Menu
-                style={{ right: 0, top: 38 }}
-                show={showUserProfile}
-                onCloseModal={onCloseUserProfile}
-              >
+              <Menu style={{ right: 0, top: 38 }} show={showUserProfile} onCloseModal={onCloseUserProfile}>
                 <ProfileModal>
                   <img
                     src={gravatar.url(userData.email, {
@@ -142,9 +135,7 @@ const Workspace = () => {
           {userData.Workspaces.map((ws) => {
             return (
               <Link key={ws.id} to="`/workspace/${}/channel/general">
-                <WorkspaceButton>
-                  {ws.name.slice(0, 1).toUpperCase()}
-                </WorkspaceButton>
+                <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
           })}
@@ -164,11 +155,7 @@ const Workspace = () => {
         <form onSubmit={onCreateWorkspace}>
           <Label id="workspaace-label">
             <span>Workspace name</span>
-            <Input
-              id="workspace"
-              value={newWorkspace}
-              onChange={onChangeNewWorkpace}
-            />
+            <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkpace} />
           </Label>
           <Label id="workspace-url-label">
             <span>Workspace url</span>
