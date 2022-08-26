@@ -17,7 +17,7 @@ import {
 } from './styles';
 import axios from 'axios';
 import gravatar from 'gravatar';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, VFC } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Navigate, Outlet, Link } from 'react-router-dom';
 import Menu from '@components/Menu';
@@ -27,7 +27,7 @@ import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const Workspace = () => {
+const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
   const { data: userData, error } = useSWR<IUser | false>('/api/users', fetcher);
   const [logOutError, setLogOutError] = useState(false);
@@ -98,8 +98,12 @@ const Workspace = () => {
     setShowUserProfile(false);
   }, []);
 
-  if (!userData) {
+  if (userData === false) {
     return <Navigate to="/login" />;
+  }
+
+  if (!userData) {
+    return <div>Loading</div>;
   }
 
   return (

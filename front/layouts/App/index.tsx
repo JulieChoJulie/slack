@@ -16,8 +16,7 @@ const App = () => {
       <Route path="/login" element={<LogIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/channel" element={<Channel />} />
-      <Route path="/workspace">
-        <Route index element={<Workspace />} />
+      <Route path="/workspace" element={<Workspace />}>
         <Route path="dm" element={<DirectMessage />} />
         <Route path="channel" element={<Channel />} />
       </Route>
