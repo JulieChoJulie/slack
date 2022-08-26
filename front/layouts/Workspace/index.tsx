@@ -14,6 +14,7 @@ import {
   WorkspaceName,
   MenuScroll,
   AddButton,
+  WorkspaceModal,
 } from './styles';
 import axios from 'axios';
 import gravatar from 'gravatar';
@@ -26,6 +27,7 @@ import useInput from '@hooks/useInput';
 import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import CreateChannelModal from '@components/CreateChannelModal';
 
 const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
@@ -34,7 +36,9 @@ const Workspace: VFC = () => {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [newWorkspace, onChangeNewWorkpace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
-  const [showCreateWorkspaceModal, setCreateWorkspaceModal] = useState(false);
+  const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
 
   toast.configure();
 
@@ -51,16 +55,25 @@ const Workspace: VFC = () => {
       });
   }, [mutate]);
 
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal(true);
+  }, []);
+
   const onClickUserProfile = useCallback(() => {
     setShowUserProfile((prev) => !prev);
   }, []);
 
   const onClickCreateWorkSpace = useCallback(() => {
-    setCreateWorkspaceModal(true);
+    setShowCreateWorkspaceModal(true);
   }, []);
 
   const onCloseModal = useCallback(() => {
-    setCreateWorkspaceModal(false);
+    setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
+  }, []);
+
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
   }, []);
 
   const onCreateWorkspace = useCallback(
@@ -79,7 +92,6 @@ const Workspace: VFC = () => {
         )
         .then((data) => {
           mutate('/api/workspaces', data);
-          setCreateWorkspaceModal(false);
           setNewWorkspace('');
           setNewUrl('');
         })
@@ -136,7 +148,7 @@ const Workspace: VFC = () => {
       </Header>
       <WorkspaceWrapper>
         <Workspaces>
-          {userData.Workspaces.map((ws) => {
+          {userData?.Workspaces.map((ws) => {
             return (
               <Link key={ws.id} to="`/workspace/${}/channel/general">
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
@@ -146,10 +158,15 @@ const Workspace: VFC = () => {
           <AddButton onClick={onClickCreateWorkSpace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>DM</WorkspaceName>
-          <MenuScroll>menu</MenuScroll>
-          <Link to="/workspace/dm">DM</Link>
-          <Link to="/workspace/channel">Channel</Link>
+          <WorkspaceName onClick={toggleWorkspaceModal}> Slack</WorkspaceName>
+          <MenuScroll>
+            <Menu show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
+              <WorkspaceModal>
+                <button onClick={onClickAddChannel}>Create Channel</button>
+                <button onClick={onLogout}>Log out</button>
+              </WorkspaceModal>
+            </Menu>
+          </MenuScroll>
         </Channels>
         <Chats>
           <Outlet />
@@ -168,6 +185,7 @@ const Workspace: VFC = () => {
           </Label>
         </form>
       </Modal>
+      <CreateChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal}></CreateChannelModal>
     </div>
   );
 };
