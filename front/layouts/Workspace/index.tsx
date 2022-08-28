@@ -28,6 +28,8 @@ import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CreateChannelModal from '@components/CreateChannelModal';
+import InviteWorkspaceModal from '@components/inviteWorkspaceModal';
+import InviteChannelModal from '@components/InviteChannelModal';
 
 const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
@@ -60,6 +62,8 @@ const Workspace: VFC = () => {
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
+  const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
 
   toast.configure();
 
@@ -91,6 +95,8 @@ const Workspace: VFC = () => {
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
+    setShowInviteChannelModal(false);
+    setShowInviteWorkspaceModal(false);
   }, []);
 
   const toggleWorkspaceModal = useCallback(() => {
@@ -122,7 +128,7 @@ const Workspace: VFC = () => {
           toast.error(err.response?.data, { position: 'bottom-center' });
         });
     },
-    [newUrl, newWorkspace],
+    [newUrl, newWorkspace, mutate, setNewWorkspace, setNewUrl],
   );
 
   const onCloseUserProfile = useCallback((e) => {
@@ -212,6 +218,16 @@ const Workspace: VFC = () => {
         setShowCreateChannelModal={setShowCreateChannelModal}
         toggleWorkspaceModal={toggleWorkspaceModal}
       ></CreateChannelModal>
+      <InviteWorkspaceModal
+        show={showInviteWorkspaceModal}
+        onCloseModal={onCloseModal}
+        setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
+      ></InviteWorkspaceModal>
+      <InviteChannelModal
+        show={showInviteChannelModal}
+        onCloseModal={onCloseModal}
+        setShowInviteChannelModal={setShowInviteChannelModal}
+      ></InviteChannelModal>
     </div>
   );
 };
