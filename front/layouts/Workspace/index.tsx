@@ -14,27 +14,52 @@ import {
   WorkspaceName,
   MenuScroll,
   AddButton,
+  WorkspaceModal,
 } from './styles';
 import axios from 'axios';
 import gravatar from 'gravatar';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState, VFC } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { Navigate, Outlet, Link } from 'react-router-dom';
+import { Navigate, Outlet, Link, useParams } from 'react-router-dom';
 import Menu from '@components/Menu';
-import { IUser } from '@typings/db';
+import { IUser, IChannel } from '@typings/db';
 import useInput from '@hooks/useInput';
 import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import CreateChannelModal from '@components/CreateChannelModal';
 
-const Workspace = () => {
+const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
+  const { workspace } = useParams<{ workspace: string }>();
   const { data: userData, error } = useSWR<IUser | false>('/api/users', fetcher);
+  const { data: channelData, error: channelError } = useSWR<IChannel[]>(
+    userData ? `/api/workspaces/${workspace}/channels` : null,
+    fetcher,
+    {
+      onError: (error) => {
+        console.log('onError');
+        if (error.status === 404) {
+          console.log(error.data);
+          toast.error(error.data, { position: 'bottom-center' });
+        }
+      },
+      onErrorRetry: (error) => {
+        console.log('onErrorRetry');
+        console.log(error);
+        console.log(error.status);
+        if (error.status === 404) return;
+      },
+    },
+  );
+
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [newWorkspace, onChangeNewWorkpace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
-  const [showCreateWorkspaceModal, setCreateWorkspaceModal] = useState(false);
+  const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
 
   toast.configure();
 
@@ -51,16 +76,25 @@ const Workspace = () => {
       });
   }, [mutate]);
 
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal(true);
+  }, []);
+
   const onClickUserProfile = useCallback(() => {
     setShowUserProfile((prev) => !prev);
   }, []);
 
   const onClickCreateWorkSpace = useCallback(() => {
-    setCreateWorkspaceModal(true);
+    setShowCreateWorkspaceModal(true);
   }, []);
 
   const onCloseModal = useCallback(() => {
-    setCreateWorkspaceModal(false);
+    setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
+  }, []);
+
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
   }, []);
 
   const onCreateWorkspace = useCallback(
@@ -79,13 +113,11 @@ const Workspace = () => {
         )
         .then((data) => {
           mutate('/api/workspaces', data);
-          setCreateWorkspaceModal(false);
           setNewWorkspace('');
           setNewUrl('');
         })
         .catch((err) => {
           console.dir(err);
-          console.log(err.response.data);
 
           toast.error(err.response?.data, { position: 'bottom-center' });
         });
@@ -98,8 +130,12 @@ const Workspace = () => {
     setShowUserProfile(false);
   }, []);
 
-  if (!userData) {
+  if (userData === false) {
     return <Navigate to="/login" />;
+  }
+
+  if (!userData) {
+    return <div>Loading</div>;
   }
 
   return (
@@ -132,7 +168,7 @@ const Workspace = () => {
       </Header>
       <WorkspaceWrapper>
         <Workspaces>
-          {userData.Workspaces.map((ws) => {
+          {userData?.Workspaces?.map((ws) => {
             return (
               <Link key={ws.id} to="`/workspace/${}/channel/general">
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
@@ -142,10 +178,16 @@ const Workspace = () => {
           <AddButton onClick={onClickCreateWorkSpace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>DM</WorkspaceName>
-          <MenuScroll>menu</MenuScroll>
-          <Link to="/workspace/dm">DM</Link>
-          <Link to="/workspace/channel">Channel</Link>
+          <WorkspaceName onClick={toggleWorkspaceModal}> Slack</WorkspaceName>
+          <MenuScroll>
+            <Menu show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
+              <WorkspaceModal>
+                <button onClick={onClickAddChannel}>Create Channel</button>
+                <button onClick={onLogout}>Log out</button>
+              </WorkspaceModal>
+            </Menu>
+            {!channelError && channelData?.map((c) => <div>{c.name}</div>)}
+          </MenuScroll>
         </Channels>
         <Chats>
           <Outlet />
@@ -164,6 +206,12 @@ const Workspace = () => {
           </Label>
         </form>
       </Modal>
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+        toggleWorkspaceModal={toggleWorkspaceModal}
+      ></CreateChannelModal>
     </div>
   );
 };

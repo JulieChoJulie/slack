@@ -1,15 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import useInput from '@hooks/useInput';
 import fetcher from '@utils/fetcher';
-import {
-  Button,
-  Error,
-  Form,
-  Header,
-  Input,
-  Label,
-  LinkContainer,
-} from '@pages/SignUp/styles';
+import { Button, Error, Form, Header, Input, Label, LinkContainer } from '@pages/SignUp/styles';
 import axios from 'axios';
 import { Link, Navigate } from 'react-router-dom';
 import useSWR from 'swr';
@@ -27,11 +19,7 @@ const LogIn = () => {
     (e) => {
       e.preventDefault();
       axios
-        .post(
-          '/api/users/login',
-          { email, password },
-          { withCredentials: true },
-        )
+        .post('/api/users/login', { email, password }, { withCredentials: true })
         .then((data) => {
           mutate(data, { revalidate: false });
         })
@@ -48,7 +36,7 @@ const LogIn = () => {
   }
 
   if (data) {
-    return <Navigate to="/workspace" replace />;
+    return <Navigate to="/workspace/slack/channel/general" replace />;
   }
 
   return (
@@ -58,25 +46,13 @@ const LogIn = () => {
         <Label id="email-label">
           <span>Email</span>
           <div>
-            <Input
-              type="email"
-              value={email}
-              name="email"
-              id="email"
-              onChange={onChangeEmail}
-            />
+            <Input type="email" value={email} name="email" id="email" onChange={onChangeEmail} />
           </div>
         </Label>
         <Label>
           <span>Password</span>
           <div>
-            <Input
-              type="password"
-              value={password}
-              name="password"
-              id="password"
-              onChange={onChangePassword}
-            />
+            <Input type="password" value={password} name="password" id="password" onChange={onChangePassword} />
           </div>
         </Label>
         <Button>Log in</Button>

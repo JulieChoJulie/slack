@@ -16,10 +16,10 @@ const App = () => {
       <Route path="/login" element={<LogIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/channel" element={<Channel />} />
-      <Route path="/workspace">
-        <Route index element={<Workspace />} />
-        <Route path="dm" element={<DirectMessage />} />
-        <Route path="channel" element={<Channel />} />
+      <Route path="/workspace" element={<Workspace />} />
+      <Route path="/workspace/:workspace" element={<Workspace />}>
+        <Route path="dm/:dm" element={<DirectMessage />} />
+        <Route path="channel/:channel" element={<Channel />} />
       </Route>
     </Routes>
   );
