@@ -18,7 +18,7 @@ import {
 } from './styles';
 import axios from 'axios';
 import gravatar from 'gravatar';
-import React, { useCallback, useEffect, useState, VFC } from 'react';
+import React, { useCallback, useState, VFC } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Navigate, Outlet, Link, useParams } from 'react-router-dom';
 import Menu from '@components/Menu';
@@ -30,31 +30,23 @@ import 'react-toastify/dist/ReactToastify.css';
 import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/inviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
+import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
+
+// const errorHandling = {
+//   onError: (error) => {
+//     if (error.status === 404) {
+//       toast.error(error.data, { position: 'bottom-center' });
+//     }
+//   },
+//   onErrorRetry: (error) => {
+//     if (error.status === 404) return;
+//   },
+// };
 
 const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
-  const { workspace } = useParams<{ workspace: string }>();
-  const { data: userData, error } = useSWR<IUser | false>('/api/users', fetcher);
-  const { data: channelData, error: channelError } = useSWR<IChannel[]>(
-    userData ? `/api/workspaces/${workspace}/channels` : null,
-    fetcher,
-    {
-      onError: (error) => {
-        console.log('onError');
-        if (error.status === 404) {
-          console.log(error.data);
-          toast.error(error.data, { position: 'bottom-center' });
-        }
-      },
-      onErrorRetry: (error) => {
-        console.log('onErrorRetry');
-        console.log(error);
-        console.log(error.status);
-        if (error.status === 404) return;
-      },
-    },
-  );
-
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher);
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [newWorkspace, onChangeNewWorkpace, setNewWorkspace] = useInput('');
@@ -90,6 +82,10 @@ const Workspace: VFC = () => {
 
   const onClickCreateWorkSpace = useCallback(() => {
     setShowCreateWorkspaceModal(true);
+  }, []);
+
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal(true);
   }, []);
 
   const onCloseModal = useCallback(() => {
@@ -176,7 +172,7 @@ const Workspace: VFC = () => {
         <Workspaces>
           {userData?.Workspaces?.map((ws) => {
             return (
-              <Link key={ws.id} to="`/workspace/${}/channel/general">
+              <Link key={ws.id} to={`/workspace/${ws.name}/channel/general`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
@@ -189,10 +185,12 @@ const Workspace: VFC = () => {
             <Menu show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
               <WorkspaceModal>
                 <button onClick={onClickAddChannel}>Create Channel</button>
+                <button onClick={onClickInviteWorkspace}>Invite a user</button>
                 <button onClick={onLogout}>Log out</button>
               </WorkspaceModal>
             </Menu>
-            {!channelError && channelData?.map((c) => <div>{c.name}</div>)}
+            <ChannelList />
+            <DMList />
           </MenuScroll>
         </Channels>
         <Chats>
@@ -223,11 +221,11 @@ const Workspace: VFC = () => {
         onCloseModal={onCloseModal}
         setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
       ></InviteWorkspaceModal>
-      <InviteChannelModal
+      {/* <InviteChannelModal
         show={showInviteChannelModal}
         onCloseModal={onCloseModal}
         setShowInviteChannelModal={setShowInviteChannelModal}
-      ></InviteChannelModal>
+      ></InviteChannelModal> */}
     </div>
   );
 };
