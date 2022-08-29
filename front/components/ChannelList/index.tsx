@@ -34,7 +34,7 @@ const ChannelList = () => {
         {!channelCollapse &&
           channelData?.map((channel) => {
             const count = countList[channel.id] || 0;
-            console.log(channel.name);
+
             return (
               <NavLink
                 key={channel.name}
