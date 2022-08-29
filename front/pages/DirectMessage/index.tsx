@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Container, Header } from '@pages/DirectMessage/styles';
 import useSWR from 'swr';
 import { IUser } from '@typings/db';
@@ -7,11 +7,21 @@ import gravatar from 'gravatar';
 import fetcher from '@utils/fetcher';
 import ChatList from '@components/ChatList';
 import ChatBox from '@components/ChatBox';
+import useInput from '@hooks/useInput';
+import axios from 'axios';
 
 const DirectMessage = () => {
   const { workspace, dm } = useParams<{ workspace: string; dm: string }>();
   const { data: userData } = useSWR<IUser | false>(`/api/workspaces/${workspace}/users/${dm}`, fetcher);
   const { data: myData } = useSWR<IUser | false>(`/api/users`, fetcher);
+
+  const [chat, onChangeChat] = useInput('');
+
+  const onSubmitForm = useCallback((e) => {
+    e.preventDefault();
+
+    // axios.post()
+  }, []);
 
   if (!userData || !myData) {
     return <div>Loading..</div>;
@@ -23,7 +33,7 @@ const DirectMessage = () => {
         <span>{userData.nickname}</span>
       </Header>
       <ChatList />
-      <ChatBox chat={`hello`} />
+      <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
     </Container>
   );
 };

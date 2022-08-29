@@ -18,7 +18,7 @@ import {
 } from './styles';
 import axios from 'axios';
 import gravatar from 'gravatar';
-import React, { useCallback, useEffect, useState, VFC } from 'react';
+import React, { useCallback, useState, VFC } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Navigate, Outlet, Link, useParams } from 'react-router-dom';
 import Menu from '@components/Menu';
@@ -46,14 +46,7 @@ import ChannelList from '@components/ChannelList';
 
 const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
-  const { workspace } = useParams<{ workspace: string }>();
   const { data: userData } = useSWR<IUser | false>('/api/users', fetcher);
-  const { data: channelData, error: channelError } = useSWR<IChannel[]>(
-    userData ? `/api/workspaces/${workspace}/channels` : null,
-    fetcher,
-  );
-  const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
-
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [newWorkspace, onChangeNewWorkpace, setNewWorkspace] = useInput('');
