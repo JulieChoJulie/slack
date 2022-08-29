@@ -31,6 +31,7 @@ import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/inviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
 
 // const errorHandling = {
 //   onError: (error) => {
@@ -88,6 +89,10 @@ const Workspace: VFC = () => {
 
   const onClickCreateWorkSpace = useCallback(() => {
     setShowCreateWorkspaceModal(true);
+  }, []);
+
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal(true);
   }, []);
 
   const onCloseModal = useCallback(() => {
@@ -187,11 +192,12 @@ const Workspace: VFC = () => {
             <Menu show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
               <WorkspaceModal>
                 <button onClick={onClickAddChannel}>Create Channel</button>
+                <button onClick={onClickInviteWorkspace}>Invite a user</button>
                 <button onClick={onLogout}>Log out</button>
               </WorkspaceModal>
             </Menu>
-            {/* <ChannelList userData={userData} /> */}
-            <DMList userData={userData} />
+            <ChannelList />
+            <DMList />
           </MenuScroll>
         </Channels>
         <Chats>

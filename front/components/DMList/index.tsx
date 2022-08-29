@@ -6,11 +6,11 @@ import { CollapseButton } from '@components/DMList/styles';
 import { NavLink } from 'react-router-dom';
 import fetcher from '@utils/fetcher';
 
-interface Props {
-  userData?: IUser;
-}
-const DMList: FC<Props> = ({ userData }) => {
+const DMList = () => {
   const { workspace } = useParams<{ workspace: string; channel: string }>();
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher, {
+    dedupingInterval: 2000,
+  });
   const { data: memberData } = useSWR<IUserWithOnline[]>(
     userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
@@ -30,8 +30,6 @@ const DMList: FC<Props> = ({ userData }) => {
       };
     });
   }, []);
-
-  const activeClassName = 'selected';
 
   return (
     <>
@@ -67,7 +65,7 @@ const DMList: FC<Props> = ({ userData }) => {
                   data-qa-presence-dnd="false"
                 />
                 <span className={count && count > 0 ? 'bold' : undefined}> {member.nickname}</span>
-                {member.id === userData?.id && <span>(me)</span>}
+                {userData && member.id === userData?.id && <span>(me)</span>}
                 {(count && count > 0 && <span className="count">{count}</span>) || null}
               </NavLink>
             );
