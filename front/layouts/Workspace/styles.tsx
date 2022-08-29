@@ -93,7 +93,7 @@ export const Channels = styled.nav`
     display: flex;
     align-items: center;
 
-    &.selected {
+    &.active {
       color: white;
     }
   }

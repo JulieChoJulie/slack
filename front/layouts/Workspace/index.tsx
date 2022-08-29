@@ -30,30 +30,28 @@ import 'react-toastify/dist/ReactToastify.css';
 import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/inviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
+import DMList from '@components/DMList';
+
+// const errorHandling = {
+//   onError: (error) => {
+//     if (error.status === 404) {
+//       toast.error(error.data, { position: 'bottom-center' });
+//     }
+//   },
+//   onErrorRetry: (error) => {
+//     if (error.status === 404) return;
+//   },
+// };
 
 const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
   const { workspace } = useParams<{ workspace: string }>();
-  const { data: userData, error } = useSWR<IUser | false>('/api/users', fetcher);
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher);
   const { data: channelData, error: channelError } = useSWR<IChannel[]>(
     userData ? `/api/workspaces/${workspace}/channels` : null,
     fetcher,
-    {
-      onError: (error) => {
-        console.log('onError');
-        if (error.status === 404) {
-          console.log(error.data);
-          toast.error(error.data, { position: 'bottom-center' });
-        }
-      },
-      onErrorRetry: (error) => {
-        console.log('onErrorRetry');
-        console.log(error);
-        console.log(error.status);
-        if (error.status === 404) return;
-      },
-    },
   );
+  const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
 
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
@@ -176,7 +174,7 @@ const Workspace: VFC = () => {
         <Workspaces>
           {userData?.Workspaces?.map((ws) => {
             return (
-              <Link key={ws.id} to="`/workspace/${}/channel/general">
+              <Link key={ws.id} to={`/workspace/${ws.name}/channel/general`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
@@ -192,7 +190,8 @@ const Workspace: VFC = () => {
                 <button onClick={onLogout}>Log out</button>
               </WorkspaceModal>
             </Menu>
-            {!channelError && channelData?.map((c) => <div>{c.name}</div>)}
+            {/* <ChannelList userData={userData} /> */}
+            <DMList userData={userData} />
           </MenuScroll>
         </Channels>
         <Chats>
