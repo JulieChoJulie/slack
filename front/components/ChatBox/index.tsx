@@ -28,11 +28,14 @@ const ChatBox: VFC<Props> = ({ chat, onSubmitForm, onChangeChat, placeholder }) 
       autosize(textareaRef.current);
     }
   });
+
   const onKeydownChat = useCallback(
     (e) => {
       if (e.key === 'Enter') {
-        e.preventDefault();
-        onSubmitForm(e);
+        if (!e.shiftKey) {
+          e.preventDefault();
+          onSubmitForm(e);
+        }
       }
     },
     [onSubmitForm],
