@@ -18,7 +18,7 @@ import {
 } from './styles';
 import axios from 'axios';
 import gravatar from 'gravatar';
-import React, { useCallback, useState, VFC } from 'react';
+import React, { useCallback, useState, VFC, useEffect } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Navigate, Outlet, Link, useParams } from 'react-router-dom';
 import Menu from '@components/Menu';
@@ -32,21 +32,16 @@ import InviteWorkspaceModal from '@components/inviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import DMList from '@components/DMList';
 import ChannelList from '@components/ChannelList';
-
-// const errorHandling = {
-//   onError: (error) => {
-//     if (error.status === 404) {
-//       toast.error(error.data, { position: 'bottom-center' });
-//     }
-//   },
-//   onErrorRetry: (error) => {
-//     if (error.status === 404) return;
-//   },
-// };
+import useSocket from '@hooks/useSocket';
 
 const Workspace: VFC = () => {
   const { mutate } = useSWRConfig();
   const { data: userData } = useSWR<IUser | false>('/api/users', fetcher);
+
+  const { workspace } = useParams<{ workspace: string }>();
+
+  const [socket, disconnect] = useSocket(workspace);
+
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [newWorkspace, onChangeNewWorkpace, setNewWorkspace] = useInput('');
@@ -58,6 +53,12 @@ const Workspace: VFC = () => {
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
 
   toast.configure();
+
+  useEffect(() => {
+    // socket.on('message');
+    // socket.emit();
+    // disconnect();
+  }, []);
 
   const onLogout = useCallback(() => {
     setLogOutError(false);
