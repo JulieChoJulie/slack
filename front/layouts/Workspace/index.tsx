@@ -51,7 +51,9 @@ const Workspace: VFC = () => {
 
   toast.configure();
 
-  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher, { dedupingInterval: 2000 });
+  const { data: userData, mutate: mutateUser } = useSWR<IUser | false>('/api/users', fetcher, {
+    dedupingInterval: 2000,
+  });
   const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
   const [socket, disconnect] = useSocket(workspace);
 
@@ -122,7 +124,7 @@ const Workspace: VFC = () => {
           { withCredentials: true },
         )
         .then((data) => {
-          mutate('/api/workspaces', data);
+          mutate('/api/users', false, { revalidate: false });
           setNewWorkspace('');
           setNewUrl('');
         })
