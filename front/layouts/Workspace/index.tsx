@@ -182,7 +182,7 @@ const Workspace: VFC = () => {
         <Workspaces>
           {userData?.Workspaces?.map((ws) => {
             return (
-              <Link key={ws.id} to={`/workspace/${ws.name}/channel/general`}>
+              <Link key={ws.id} to={`/workspace/${ws.url}/channel/general`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );

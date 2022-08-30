@@ -42,7 +42,7 @@ const DirectMessage = () => {
 
       // axios.post()
     },
-    [chat],
+    [chat, dm, workspace],
   );
 
   if (!userData || !myData) {
