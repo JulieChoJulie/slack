@@ -14,10 +14,11 @@ const ChatList: VFC<Props> = ({ chatData }) => {
   return (
     <ChatZone>
       <Scrollbars autoHide ref={scrollbarRef}>
-        <Section>section</Section>
-        {chatData?.map((c: IDM) => (
-          <Chat key={c.id} data={c} />
-        ))}
+        <Section>
+          {chatData?.map((c: IDM) => (
+            <Chat key={c.id} data={c} />
+          ))}
+        </Section>
       </Scrollbars>
     </ChatZone>
   );
