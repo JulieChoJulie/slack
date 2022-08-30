@@ -1,10 +1,11 @@
 import { IUser, IUserWithOnline } from '@typings/db';
-import React, { FC, useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useSWR from 'swr';
 import { CollapseButton } from '@components/DMList/styles';
 import { NavLink } from 'react-router-dom';
 import fetcher from '@utils/fetcher';
+import useSocket from '@hooks/useSocket';
 
 const DMList = () => {
   const { workspace } = useParams<{ workspace: string; channel: string }>();
@@ -15,6 +16,9 @@ const DMList = () => {
     userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
   );
+
+  const [socket] = useSocket(workspace);
+
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [countList, setCountList] = useState<{ [key: string]: number }>({});
   const [onlineList, setOnlineList] = useState<number[]>([]);
@@ -30,6 +34,16 @@ const DMList = () => {
       };
     });
   }, []);
+
+  useEffect(() => {
+    socket?.on('onlineList', (data: number[]) => {
+      setOnlineList(data);
+    });
+
+    return () => {
+      socket?.off('onlineList');
+    };
+  }, [socket]);
 
   return (
     <>

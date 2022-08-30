@@ -22,7 +22,7 @@ import React, { useCallback, useState, VFC, useEffect } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Navigate, Outlet, Link, useParams } from 'react-router-dom';
 import Menu from '@components/Menu';
-import { IUser, IChannel } from '@typings/db';
+import { IChannel, IUser } from '@typings/db';
 import useInput from '@hooks/useInput';
 import Modal from '@components/Modal';
 import { toast } from 'react-toastify';
@@ -35,12 +35,9 @@ import ChannelList from '@components/ChannelList';
 import useSocket from '@hooks/useSocket';
 
 const Workspace: VFC = () => {
-  const { mutate } = useSWRConfig();
-  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher);
-
   const { workspace } = useParams<{ workspace: string }>();
 
-  const [socket, disconnect] = useSocket(workspace);
+  const { mutate } = useSWRConfig();
 
   const [logOutError, setLogOutError] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
@@ -54,11 +51,21 @@ const Workspace: VFC = () => {
 
   toast.configure();
 
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher, { dedupingInterval: 2000 });
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
+  const [socket, disconnect] = useSocket(workspace);
+
   useEffect(() => {
-    // socket.on('message');
-    // socket.emit();
-    // disconnect();
-  }, []);
+    if (channelData && userData && socket) {
+      socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
+    }
+  }, [userData, channelData, socket]);
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
 
   const onLogout = useCallback(() => {
     setLogOutError(false);
