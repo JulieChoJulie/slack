@@ -1,5 +1,5 @@
 import React, { VFC, memo, useMemo } from 'react';
-import { IDM } from '@typings/db';
+import { IDM, IChat, IUser } from '@typings/db';
 import { ChatWrapper } from '@components/Chat/styles';
 import gravatar from 'gravatar';
 import dayjs from 'dayjs';
@@ -8,10 +8,10 @@ import { Link } from 'react-router-dom';
 import { useParams } from 'react-router';
 
 interface Props {
-  data: IDM;
+  data: IDM | IChat;
 }
 const Chat: VFC<Props> = ({ data }) => {
-  const user = data.Sender;
+  const user: IUser = 'Sender' in data ? data.Sender : data.User;
   const { workspace } = useParams<{ workspace: string }>();
 
   // @[julie](1)
