@@ -1,12 +1,12 @@
 import React, { useCallback, forwardRef, MutableRefObject } from 'react';
-import { IDM } from '@typings/db';
+import { IChat, IDM } from '@typings/db';
 import { ChatZone, Section, StickyHeader } from './styles';
 import Chat from '@components/Chat';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 
 interface Props {
-  chatSections: { [key: string]: IDM[] };
-  setSize: (f: (size: number) => number) => Promise<IDM[][] | undefined>;
+  chatSections: { [key: string]: (IDM | IChat)[] };
+  setSize: (f: (size: number) => number) => Promise<(IDM | IChat)[][] | undefined>;
   isEmpty: boolean;
   isReachingEnd: boolean;
 }
@@ -37,7 +37,7 @@ const ChatList = forwardRef<Scrollbars, Props>(({ chatSections, setSize, isEmpty
               <StickyHeader>
                 <button>{date}</button>
               </StickyHeader>
-              {chats.map((chat: IDM) => (
+              {chats.map((chat: IDM | IChat) => (
                 <Chat key={chat.id} data={chat} />
               ))}
             </Section>
