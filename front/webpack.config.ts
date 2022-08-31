@@ -48,10 +48,7 @@ const config: Configuration = {
           ],
           env: {
             development: {
-              plugins: [
-                ['@emotion/babel-plugin', { sourceMap: true }],
-                require.resolve('react-refresh/babel'),
-              ],
+              plugins: [['@emotion/babel-plugin', { sourceMap: true }], require.resolve('react-refresh/babel')],
             },
             production: {
               plugins: ['@emotion/babel-plugin'],
@@ -106,9 +103,7 @@ if (isDevelopment && config.plugins) {
       },
     }),
   );
-  config.plugins.push(
-    new BundleAnalyzerPlugin({ analyzerMode: 'server', openAnalyzer: false }),
-  );
+  config.plugins.push(new BundleAnalyzerPlugin({ analyzerMode: 'server', openAnalyzer: false }));
 }
 if (!isDevelopment && config.plugins) {
   config.plugins.push(new webpack.LoaderOptionsPlugin({ minimize: true }));

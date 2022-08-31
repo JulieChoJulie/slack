@@ -13,6 +13,7 @@ import makeSection from '@utils/makeSection';
 import Scrollbars from 'react-custom-scrollbars-2';
 import useSocket from '@hooks/useSocket';
 import InviteChannelModal from '@components/InviteChannelModal';
+import { DragOver } from './styles';
 
 const Channel = () => {
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
@@ -31,6 +32,7 @@ const Channel = () => {
     fetcher,
   );
   const [chat, onChangeChat, setChat] = useInput('');
+  const [dragOver, setDragOver] = useState(false);
 
   const [socket, disconnect] = useSocket(workspace);
   const scrollbarRef = useRef<Scrollbars>(null);
@@ -96,7 +98,10 @@ const Channel = () => {
 
   const onMessage = useCallback(
     (data: IChat) => {
-      if (data.Channel.name === channel) {
+      if (
+        data.Channel.name === channel &&
+        (data.content.startsWith('uploads\\') || (myData && data.UserId !== myData?.id))
+      ) {
         mutateChat((chatData) => {
           chatData?.[0].unshift(data);
           return chatData;
@@ -114,7 +119,43 @@ const Channel = () => {
         });
       }
     },
-    [channel, mutateChat, scrollbarRef],
+    [channel, mutateChat, scrollbarRef, myData],
+  );
+
+  const onDragOver = useCallback((e) => {
+    e.preventDefault();
+    console.log(e);
+    setDragOver(true);
+  }, []);
+
+  const onDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      console.log(e);
+      const formData = new FormData();
+      if (e.dataTransfer.items) {
+        // use DataTransferItemList interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+          // if dropped items aren't files, reject them
+          if (e.dataTransfer.items[i].kind === 'file') {
+            const file = e.dataTransfer.items[i].getAsFile();
+            console.log('...file[' + i + '].name = ' + file.name);
+            formData.append('image', file);
+          }
+        }
+      } else {
+        // useDataTransfer interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+          console.log('...file[' + i + '].name = ' + e.dataTransfer.files[i].name);
+          formData.append('image', e.dataTransfer.files[i]);
+        }
+      }
+      axios.post(`/api/workspaces/${workspace}/channels/${channel}/images`, formData).then(() => {
+        setDragOver(false);
+        mutateChat();
+      });
+    },
+    [workspace, channel, mutateChat],
   );
 
   useEffect(() => {
@@ -127,8 +168,9 @@ const Channel = () => {
   if (!channelData || !myData) {
     return <div>Loading..</div>;
   }
+
   return (
-    <Container>
+    <Container onDrop={onDrop} onDragOver={onDragOver}>
       <Header>
         <span>#{channel}</span>
         <div style={{ display: 'flex', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -157,6 +199,7 @@ const Channel = () => {
         onCloseModal={onCloseModal}
         setShowInviteChannelModal={setShowInviteChannelModal}
       />
+      {dragOver && <DragOver>Upload!</DragOver>}
     </Container>
   );
 };
