@@ -12,13 +12,12 @@ import useInput from '@hooks/useInput';
 import axios from 'axios';
 import makeSection from '@utils/makeSection';
 import Scrollbars from 'react-custom-scrollbars-2';
+import useSocket from '@hooks/useSocket';
 
 const DirectMessage = () => {
   const { workspace, dm } = useParams<{ workspace: string; dm: string }>();
   const { data: userData } = useSWR(`/api/workspaces/${workspace}/users/${dm}`, fetcher);
   const { data: myData } = useSWR(`/api/users`, fetcher);
-  const [chat, onChangeChat, setChat] = useInput('');
-
   const {
     data: chatData,
     mutate: mutateChat,
@@ -27,6 +26,9 @@ const DirectMessage = () => {
     (index: number) => `/api/workspaces/${workspace}/dms/${dm}/chats?perPage=20&page=${index + 1}`,
     fetcher,
   );
+  const [chat, onChangeChat, setChat] = useInput('');
+
+  const [socket, disconnect] = useSocket(workspace);
 
   // chatData: 2-d array
   //  [[{id: 3}, {id: 4}], [{ id:1, id: 2}]]
@@ -78,6 +80,37 @@ const DirectMessage = () => {
       scrollbarRef.current?.scrollToBottom();
     }
   }, [chatData]);
+
+  const onMessage = useCallback(
+    (data: IDM) => {
+      // dm = chatting user id (not me)
+      if (data.SenderId === Number(dm) && myData.id !== Number(dm)) {
+        mutateChat((chatData) => {
+          chatData?.[0].unshift(data);
+          return chatData;
+        }, false).then(() => {
+          if (scrollbarRef.current) {
+            if (
+              scrollbarRef.current.getScrollHeight() <
+              scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + 150
+            ) {
+              // if the user only scrolled up less than 150px
+              // scroll to the bottom when receiving dm
+              scrollbarRef.current.scrollToBottom();
+            }
+          }
+        });
+      }
+    },
+    [dm],
+  );
+
+  useEffect(() => {
+    socket?.on('dm', onMessage);
+    return () => {
+      socket?.off('dm', onMessage);
+    };
+  }, [socket, onMessage]);
 
   if (!userData || !myData) {
     return <div>Loading..</div>;
