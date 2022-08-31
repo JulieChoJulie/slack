@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Container, Header } from '@pages/DirectMessage/styles';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
@@ -15,8 +15,8 @@ import Scrollbars from 'react-custom-scrollbars-2';
 
 const DirectMessage = () => {
   const { workspace, dm } = useParams<{ workspace: string; dm: string }>();
-  const { data: userData } = useSWR<IUser | false>(`/api/workspaces/${workspace}/users/${dm}`, fetcher);
-  const { data: myData } = useSWR<IUser | false>(`/api/users`, fetcher);
+  const { data: userData } = useSWR(`/api/workspaces/${workspace}/users/${dm}`, fetcher);
+  const { data: myData } = useSWR(`/api/users`, fetcher);
   const [chat, onChangeChat, setChat] = useInput('');
 
   const {
@@ -36,29 +36,48 @@ const DirectMessage = () => {
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      console.log(chat);
-      if (chat?.trim()) {
+      if (chat?.trim() && chatData) {
+        const savedChat = chat;
+        mutateChat((prev) => {
+          prev?.[0]?.unshift({
+            id: (chatData[0][0]?.id || 0) + 1,
+            content: savedChat,
+            SenderId: myData.id,
+            Sender: myData,
+            ReceiverId: userData.id,
+            Receiver: userData,
+            createdAt: new Date(),
+          });
+          return prev;
+        }, false).then(() => {
+          setChat('');
+          scrollbarRef.current?.scrollToBottom();
+        });
         axios
           .post(`/api/workspaces/${workspace}/dms/${dm}/chats`, {
             content: chat,
           })
           .then(() => {
             mutateChat();
-            setChat('');
           })
           .catch((err) => {
             console.dir(err);
           });
       }
-
-      // axios.post()
     },
-    [chat, dm, workspace],
+    [chat, chatData, myData, userData, workspace, dm, mutateChat, setChat],
   );
 
   const scrollbarRef = useRef<Scrollbars>(null);
 
   const chatSections = makeSection(chatData ? [...chatData].flat().reverse() : []);
+
+  // scroll to the bottom after loading
+  useEffect(() => {
+    if (chatData?.length === 1) {
+      scrollbarRef.current?.scrollToBottom();
+    }
+  }, [chatData]);
 
   if (!userData || !myData) {
     return <div>Loading..</div>;
